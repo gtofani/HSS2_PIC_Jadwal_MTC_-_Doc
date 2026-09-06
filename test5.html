@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HSS2 - PT. Mitra Integrasi Informatika</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --bg: #0a0e0d;
+    --bg-elevated: #11181a;
+    --bg-card: #161e21;
+    --bg-hover: #1d262a;
+    --border: #2a3439;
+    --border-strong: #3a464c;
+    --text: #e8f0ee;
+    --text-dim: #94a3a0;
+    --text-faint: #5a6b6f;
+    --accent: #ff7a1a;
+    --accent-glow: rgba(255, 122, 26, 0.35);
+    --accent-2: #00d9a3;
+    --success: #00d9a3;
+    --warning: #ffb800;
+    --danger: #ff3b5c;
+    --info: #4cc2ff;
+    --purple: #b67aff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; min-height: 100vh; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(ellipse 80% 50% at 20% 0%, rgba(255, 122, 26, 0.08), transparent 60%), radial-gradient(ellipse 60% 40% at 80% 100%, rgba(0, 217, 163, 0.06), transparent 60%), linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px; pointer-events: none; z-index: 0; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .top-bar { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(20px); background: rgba(10, 14, 13, 0.85); border-bottom: 1px solid var(--border); }
+  .logo-mark { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; flex-shrink: 0; }
+  .logo-mark img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+  .live-time { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-dim); letter-spacing: 0.5px; }
+  .live-time .blink { color: var(--success); animation: blink 1.6s infinite; }
+  @keyframes blink { 50% { opacity: 0.3; } }
+  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; position: relative; flex-shrink: 0; }
+  .status-dot.available { background: var(--success); box-shadow: 0 0 0 0 rgba(0,217,163,0.6); animation: pulse-green 2s infinite; }
+  .status-dot.on-site { background: var(--warning); box-shadow: 0 0 0 0 rgba(255,184,0,0.6); animation: pulse-yellow 2s infinite; }
+  .status-dot.on-leave { background: var(--text-faint); }
+  .status-dot.normal { background: var(--success); }
+  @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(0,217,163,0.6);} 70% { box-shadow: 0 0 0 8px rgba(0,217,163,0);} 100% { box-shadow: 0 0 0 0 rgba(0,217,163,0);} }
+  @keyframes pulse-yellow { 0% { box-shadow: 0 0 0 0 rgba(255,184,0,0.6);} 70% { box-shadow: 0 0 0 8px rgba(255,184,0,0);} 100% { box-shadow: 0 0 0 0 rgba(255,184,0,0);} }
+  .nav-pill { position: relative; padding: 10px 18px; border-radius: 10px; color: var(--text-dim); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; border: 1px solid transparent; white-space: nowrap; background: transparent; font-family: inherit; }
+  .nav-pill:hover { color: var(--text); background: var(--bg-hover); }
+  .nav-pill.active { color: var(--text); background: var(--bg-card); border-color: var(--border); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 12px rgba(0,0,0,0.3); }
+  .nav-pill.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: var(--accent); border-radius: 0 3px 3px 0; box-shadow: 0 0 12px var(--accent); }
+  .nav-pill .count { background: var(--bg); padding: 2px 7px; border-radius: 6px; font-size: 11px; font-family: 'JetBrains Mono', monospace; border: 1px solid var(--border); }
+  .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; position: relative; overflow: hidden; }
+  .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .panel-title { font-size: 13px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; gap: 10px; }
+  .panel-title i { color: var(--accent); }
+  .kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; position: relative; overflow: hidden; transition: all 0.3s; }
+  .kpi-card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+  .kpi-value { font-size: 38px; font-weight: 700; line-height: 1; font-family: 'JetBrains Mono', monospace; letter-spacing: -1px; }
+  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-faint); font-weight: 500; }
+  .engineer-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; transition: all 0.25s; position: relative; overflow: hidden; }
+  .engineer-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .engineer-avatar { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: #0a0e0d; font-family: 'JetBrains Mono', monospace; }
+  .spec-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid var(--border); background: var(--bg); }
+  .kanban-col { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px; min-height: 500px; display: flex; flex-direction: column; }
+  .kanban-col-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .kanban-col-body { padding: 12px; flex: 1; overflow-y: auto; min-height: 200px; }
+  .task-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; cursor: grab; transition: all 0.2s; border-left: 3px solid var(--text-faint); }
+  .task-card:hover { border-color: var(--border-strong); transform: translateX(2px); }
+  .task-card:active { cursor: grabbing; }
+  .task-card.dragging { opacity: 0.5; border-color: var(--accent); }
+  .task-card.drag-over { border-top: 2px solid var(--accent); }
+  .task-card.install { border-left-color: var(--info); }
+  .task-card.maintenance { border-left-color: var(--purple); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 9px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; font-family: inherit; }
+  .btn-primary { background: var(--accent); color: #0a0e0d; border-color: var(--accent); }
+  .btn-primary:hover { background: #ff8c33; box-shadow: 0 0 20px var(--accent-glow); }
+  .btn-ghost { background: transparent; color: var(--text-dim); border-color: var(--border); }
+  .btn-ghost:hover { color: var(--text); background: var(--bg-hover); border-color: var(--border-strong); }
+  .btn-danger { background: rgba(255,59,92,0.1); color: var(--danger); border-color: rgba(255,59,92,0.3); }
+  .btn-danger:hover { background: rgba(255,59,92,0.2); }
+  .form-input, .form-select, .form-textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 13px; font-family: inherit; transition: all 0.2s; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,122,26,0.15); }
+  .form-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); font-weight: 600; margin-bottom: 6px; display: block; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(5, 8, 7, 0.8); backdrop-filter: blur(8px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.2s; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s; }
+  .modal-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg-elevated); z-index: 1; }
+  .modal-body { padding: 22px; }
+  .modal-footer { padding: 16px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; background: var(--bg-elevated); }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th { text-align: left; padding: 12px 16px; color: var(--text-faint); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; border-bottom: 1px solid var(--border); background: var(--bg-elevated); }
+  .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .data-table tr:hover td { background: var(--bg-hover); }
+  .tab-btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; color: var(--text-dim); cursor: pointer; transition: all 0.2s; border: 1px solid transparent; font-weight: 500; background: transparent; font-family: inherit; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { background: var(--bg-card); color: var(--text); border-color: var(--border); }
+  .scroll-x { overflow-x: auto; }
+  .calendar-day { aspect-ratio: 1; border: 1px solid var(--border); border-radius: 6px; padding: 6px; background: var(--bg-elevated); font-size: 11px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+  .calendar-day:hover { border-color: var(--accent); }
+  .calendar-day.today { background: rgba(255,122,26,0.08); border-color: var(--accent); }
+  .calendar-day.other-month { opacity: 0.3; }
+  .calendar-day .day-num { font-weight: 600; color: var(--text-dim); }
+  .calendar-day.today .day-num { color: var(--accent); }
+  .task-pill { font-size: 9px; padding: 1px 4px; border-radius: 3px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .doc-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; transition: all 0.2s; cursor: pointer; }
+  .doc-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .search-input { background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px 9px 36px; color: var(--text); font-size: 13px; width: 100%; transition: all 0.2s; }
+  .search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,122,26,0.15); }
+  .toast-container { position: fixed; top: 80px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 10px; }
+  .toast { background: var(--bg-elevated); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; padding: 12px 16px; min-width: 280px; display: flex; align-items: center; gap: 10px; animation: slideInRight 0.3s; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .toast.success { border-left-color: var(--success); }
+  .toast.error { border-left-color: var(--danger); }
+  .toast.info { border-left-color: var(--info); }
+  @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  .view { display: none; animation: fadeInView 0.3s; }
+  .view.active { display: block; }
+  @keyframes fadeInView { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .gradient-text { background: linear-gradient(135deg, var(--accent), #ff4500); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .signal-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+  .signal-bars span { width: 3px; background: var(--success); border-radius: 1px; }
+  .signal-bars span:nth-child(1) { height: 30%; }
+  .signal-bars span:nth-child(2) { height: 60%; }
+  .signal-bars span:nth-child(3) { height: 100%; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+  @media (max-width: 768px) { .kpi-value { font-size: 28px; } .nav-pill { padding: 8px 12px; font-size: 13px; } .nav-pill .count { display: none; } }
+  .upload-area { border: 2px dashed var(--border); border-radius: 10px; padding: 18px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg); }
+  .upload-area:hover { border-color: var(--accent); background: rgba(255,122,26,0.05); }
+  .upload-area .file-icon { font-size: 24px; color: var(--accent); margin-bottom: 8px; }
+  .hidden-dyn { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="max-w-[1600px] mx-auto px-6 py-3 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="logo-mark">
+        <img src="https://z-cdn-media.chatglm.cn/files/c2d2ed11-f038-4b5c-9387-d5beb7dd88b2.png?auth_key=1887564401-f47bf5c803ce4b72b2f6b0f2559cce16-0-e991e5bd96d3b020132137d88fb5cd4b" alt="MII Logo">
+      </div>
+      <div>
+        <div class="text-[15px] font-bold tracking-wide">HSS<span class="gradient-text">·</span>2</div>
+        <div class="text-[10px] text-[var(--text-faint)] uppercase tracking-[1.5px] mono">PT. Mitra Integrasi Informatika</div>
+      </div>
+    </div>
+    
+    <div class="hidden md:flex items-center gap-6">
+      <div class="live-time"><span class="blink">●</span> <span id="liveTime">--:--:--</span> WIB</div>
+      <div class="flex items-center gap-2 text-xs">
+        <span class="signal-bars"><span></span><span></span><span></span></span>
+        <span class="text-[var(--text-dim)] mono">SYSTEM ONLINE</span>
+      </div>
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-card)]">
+        <div class="w-7 h-7 rounded-md bg-gradient-to-br from-[var(--accent)] to-[#ff4500] flex items-center justify-center text-[11px] font-bold text-[#0a0e0d]">H2</div>
+        <div class="text-xs">
+          <div class="font-medium">HSS2</div>
+          <div class="text-[10px] text-[var(--text-faint)] mono">Admin Access</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <nav class="border-t border-[var(--border)]">
+    <div class="max-w-[1600px] mx-auto px-6 py-2 flex items-center gap-2 scroll-x">
+      <button class="nav-pill active" data-view="dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</button>
+      <button class="nav-pill" data-view="engineers"><i class="fa-solid fa-users-gear"></i> Tim Engineer <span class="count" id="navEngCount">0</span></button>
+      <button class="nav-pill" data-view="tasks"><i class="fa-solid fa-diagram-project"></i> Jadwal & Task <span class="count" id="navTaskCount">0</span></button>
+      <button class="nav-pill" data-view="docs"><i class="fa-solid fa-folder-tree"></i> Dokumentasi</button>
+      <button class="nav-pill" data-view="logs"><i class="fa-solid fa-clock-rotate-left"></i> Log Aktivitas</button>
+    </div>
+  </nav>
+</header>
+
+<main class="max-w-[1600px] mx-auto px-6 py-6 relative z-10">
+
+  <!-- DASHBOARD VIEW -->
+  <section id="view-dashboard" class="view active">
+    <div class="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+      <div>
+        <div class="text-[11px] mono text-[var(--accent)] mb-2 tracking-[2px] uppercase">// HSS2 Operations Control Center</div>
+        <h1 class="text-3xl md:text-4xl font-bold leading-tight">HSS2 <span class="gradient-text">Infrastructure Database</span></h1>
+        <p class="text-[var(--text-dim)] text-sm mt-1">PT. Mitra Integrasi Informatika — Department Dashboard</p>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn btn-ghost" onclick="openModal('taskModal')"><i class="fa-solid fa-plus"></i> Task Baru</button>
+        <button class="btn btn-primary" onclick="openModal('engineerModal')"><i class="fa-solid fa-user-plus"></i> Engineer Baru</button>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="kpi-card">
+        <div class="flex items-center justify-between mb-3"><div class="kpi-label">Total Engineer</div><i class="fa-solid fa-users text-[var(--accent)]"></i></div>
+        <div class="kpi-value" id="kpiEngineers">0</div>
+        <div class="flex items-center gap-2 mt-2 text-xs"><span class="text-[var(--success)] mono"><i class="fa-solid fa-arrow-up text-[10px]"></i> <span id="kpiEngAvail">0</span></span><span class="text-[var(--text-faint)]">available now</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="flex items-center justify-between mb-3"><div class="kpi-label">Active Tasks</div><i class="fa-solid fa-clipboard-list text-[var(--accent)]"></i></div>
+        <div class="kpi-value" id="kpiTasks">0</div>
+        <div class="flex items-center gap-2 mt-2 text-xs"><span class="text-[var(--warning)] mono"><span id="kpiTaskProg">0</span> in-progress</span><span class="text-[var(--text-faint)]">·</span><span class="text-[var(--info)] mono"><span id="kpiTaskPlan">0</span> planned</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="flex items-center justify-between mb-3"><div class="kpi-label">Completed</div><i class="fa-solid fa-check-double text-[var(--accent)]"></i></div>
+        <div class="kpi-value" id="kpiDone">0</div>
+        <div class="flex items-center gap-2 mt-2 text-xs"><span class="text-[var(--success)] mono">This month</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="flex items-center justify-between mb-3"><div class="kpi-label">Documentation</div><i class="fa-solid fa-file-lines text-[var(--accent)]"></i></div>
+        <div class="kpi-value" id="kpiDocs">0</div>
+        <div class="flex items-center gap-2 mt-2 text-xs"><span class="text-[var(--text-dim)] mono">Total records</span></div>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      <div class="panel lg:col-span-2">
+        <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-chart-line"></i> Tugas 6 Bulan Terakhir</div></div>
+        <div class="p-4"><canvas id="chartTasks" height="100"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-chart-pie"></i> Distribusi Tipe Dokumen</div></div>
+        <div class="p-4"><canvas id="chartDocs" height="180"></canvas></div>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-fire"></i> Task Mendesak</div><button class="btn btn-ghost text-xs" onclick="navigate('tasks')">Lihat semua <i class="fa-solid fa-arrow-right text-[10px]"></i></button></div>
+        <div class="p-2" id="urgentTasksList"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-users"></i> Status Engineer</div><button class="btn btn-ghost text-xs" onclick="navigate('engineers')">Lihat semua <i class="fa-solid fa-arrow-right text-[10px]"></i></button></div>
+        <div class="p-2" id="engineerStatusList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ENGINEERS VIEW -->
+  <section id="view-engineers" class="view">
+    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <div class="text-[11px] mono text-[var(--accent)] mb-2 tracking-[2px] uppercase">// Module 01</div>
+        <h1 class="text-3xl font-bold">Resource & Tim Engineer</h1>
+        <p class="text-[var(--text-dim)] text-sm mt-1">Kelola profil tim teknis dan ketersediaan real-time.</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('engineerModal')"><i class="fa-solid fa-user-plus"></i> Tambah Engineer</button>
+    </div>
+    <div class="panel p-4 mb-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="relative flex-1 min-w-[200px]">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-faint)] text-sm"></i>
+          <input type="text" id="engineerSearch" class="search-input" placeholder="Cari nama engineer...">
+        </div>
+        <select id="filterSpec" class="form-select max-w-[200px]">
+          <option value="">Semua Spesialisasi</option><option value="Server">Server</option><option value="Storage">Storage</option><option value="SAN Switch">SAN Switch</option>
+        </select>
+        <select id="filterStatus" class="form-select max-w-[180px]">
+          <option value="">Semua Status</option><option value="Available">Available</option><option value="On-Site">On-Site</option><option value="On-Leave">On-Leave</option>
+        </select>
+      </div>
+    </div>
+    <div id="engineersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+  </section>
+
+  <!-- TASKS VIEW -->
+  <section id="view-tasks" class="view">
+    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <div class="text-[11px] mono text-[var(--accent)] mb-2 tracking-[2px] uppercase">// Module 02</div>
+        <h1 class="text-3xl font-bold">Jadwal & Manajemen Task</h1>
+        <p class="text-[var(--text-dim)] text-sm mt-1">Kanban board & kalender interaktif untuk task instalasi dan maintenance.</p>
+      </div>
+      <div class="flex gap-2">
+        <div class="flex bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-1">
+          <button class="tab-btn active" data-tview="kanban"><i class="fa-solid fa-table-columns"></i> Kanban</button>
+          <button class="tab-btn" data-tview="calendar"><i class="fa-solid fa-calendar"></i> Kalender</button>
+          <button class="tab-btn" data-tview="list"><i class="fa-solid fa-list"></i> List</button>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('taskModal')"><i class="fa-solid fa-plus"></i> Task Baru</button>
+      </div>
+    </div>
+    
+    <div id="taskView-kanban" class="task-view">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="kanban-col" data-status="Planned">
+          <div class="kanban-col-header"><div class="flex items-center gap-2"><span class="status-dot normal"></span><span class="font-semibold text-sm">PLANNED</span><span class="text-xs text-[var(--text-faint)] mono" id="cntPlanned">0</span></div><i class="fa-solid fa-clipboard text-[var(--text-faint)]"></i></div>
+          <div class="kanban-col-body" id="colPlanned"></div>
+        </div>
+        <div class="kanban-col" data-status="In-Progress">
+          <div class="kanban-col-header"><div class="flex items-center gap-2"><span class="status-dot on-site"></span><span class="font-semibold text-sm">IN-PROGRESS</span><span class="text-xs text-[var(--text-faint)] mono" id="cntProgress">0</span></div><i class="fa-solid fa-spinner text-[var(--text-faint)]"></i></div>
+          <div class="kanban-col-body" id="colProgress"></div>
+        </div>
+        <div class="kanban-col" data-status="Completed">
+          <div class="kanban-col-header"><div class="flex items-center gap-2"><span class="status-dot available"></span><span class="font-semibold text-sm">DONE</span><span class="text-xs text-[var(--text-faint)] mono" id="cntDone">0</span></div><i class="fa-solid fa-check-double text-[var(--text-faint)]"></i></div>
+          <div class="kanban-col-body" id="colDone"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="taskView-calendar" class="task-view hidden">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="flex items-center gap-3">
+            <button class="btn btn-ghost" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+            <div class="font-semibold" id="calMonthLabel">--</div>
+            <button class="btn btn-ghost" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+          <button class="btn btn-ghost text-xs" onclick="goToToday()">Hari ini</button>
+        </div>
+        <div class="p-4">
+          <div class="grid grid-cols-7 gap-1 mb-2 text-center text-[10px] uppercase tracking-wider text-[var(--text-faint)] font-semibold"><div>Min</div><div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div>Sab</div></div>
+          <div class="grid grid-cols-7 gap-1" id="calendarGrid"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="taskView-list" class="task-view hidden">
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-list-check"></i> Daftar Tugas</div></div>
+        <div class="scroll-x">
+          <table class="data-table">
+            <thead><tr><th>Task ID</th><th>Judul</th><th>Engineer</th><th>Mulai</th><th>Berakhir</th><th>Status</th><th>Aksi</th></tr></thead>
+            <tbody id="taskTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOCS VIEW -->
+  <section id="view-docs" class="view">
+    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <div class="text-[11px] mono text-[var(--accent)] mb-2 tracking-[2px] uppercase">// Module 03</div>
+        <h1 class="text-3xl font-bold">Dokumentasi & Knowledge Base</h1>
+        <p class="text-[var(--text-dim)] text-sm mt-1">Arsip dokumen proyek, BAST, HLD/LLD, UAT, MOP, dan laporan maintenance.</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('docModal')"><i class="fa-solid fa-plus"></i> Dokumen Baru</button>
+    </div>
+    
+    <div class="panel p-4 mb-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="relative flex-1 min-w-[200px]">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-faint)] text-sm"></i>
+          <input type="text" id="docSearch" class="search-input" placeholder="Cari dokumen...">
+        </div>
+        <div class="flex flex-wrap gap-1 bg-[var(--bg)] border border-[var(--border)] rounded-lg p-1">
+          <button class="tab-btn active" data-docfilter="all">Semua</button>
+          <button class="tab-btn" data-docfilter="bast">BAST</button>
+          <button class="tab-btn" data-docfilter="hld_lld">HLD/LLD</button>
+          <button class="tab-btn" data-docfilter="asesmen">Asesmen</button>
+          <button class="tab-btn" data-docfilter="uat">UAT</button>
+          <button class="tab-btn" data-docfilter="instalasi">Dok. Instalasi</button>
+          <button class="tab-btn" data-docfilter="mop">MOP</button>
+          <button class="tab-btn" data-docfilter="preventive">Preventive</button>
+          <button class="tab-btn" data-docfilter="corrective">Corrective</button>
+          <button class="tab-btn" data-docfilter="relokasi">Relokasi</button>
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="docsGrid"></div>
+  </section>
+
+  <!-- LOGS VIEW -->
+  <section id="view-logs" class="view">
+    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <div class="text-[11px] mono text-[var(--accent)] mb-2 tracking-[2px] uppercase">// System Audit</div>
+        <h1 class="text-3xl font-bold">Log Aktivitas Pengguna</h1>
+        <p class="text-[var(--text-dim)] text-sm mt-1">Catatan riwayat operasi yang dilakukan dalam sistem.</p>
+      </div>
+      <button class="btn btn-danger" onclick="clearLogsAdminAuth()"><i class="fa-solid fa-trash"></i> Hapus Semua Log (Admin)</button>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-list-ol"></i> Riwayat Aktivitas</div></div>
+      <div class="scroll-x">
+        <table class="data-table">
+          <thead><tr><th>Waktu</th><th>Aksi</th><th>Deskripsi</th></tr></thead>
+          <tbody id="logsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- MODAL: AUTH ADMIN -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal" style="max-width: 400px;">
+    <div class="modal-header">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-[var(--accent)] bg-opacity-15 flex items-center justify-center"><i class="fa-solid fa-shield-halved text-[var(--accent)]"></i></div>
+        <div><div class="font-semibold text-base">Autentikasi Admin</div><div class="text-xs text-[var(--text-faint)]">Aksi ini membutuhkan konfirmasi</div></div>
+      </div>
+      <button class="btn btn-ghost" onclick="closeModal('authModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="authForm" class="space-y-4" onsubmit="event.preventDefault(); confirmAuth();">
+        <div><label class="form-label">Username</label><input type="text" id="authUser" class="form-input" placeholder="admin" required></div>
+        <div><label class="form-label">Password</label><input type="password" id="authPass" class="form-input" placeholder="••••••••" required></div>
+      </form>
+      <div class="mt-3 p-2 rounded-md bg-[var(--bg)] text-xs text-[var(--text-faint)] mono flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> Default: admin / admin123</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('authModal')">Batal</button>
+      <button class="btn btn-primary" onclick="confirmAuth()"><i class="fa-solid fa-unlock"></i> Konfirmasi</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: TAMBAH ENGINEER -->
+<div class="modal-overlay" id="engineerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-[var(--accent)] bg-opacity-15 flex items-center justify-center"><i class="fa-solid fa-user-gear text-[var(--accent)]"></i></div><div><div class="font-semibold text-base">Tambah Engineer</div><div class="text-xs text-[var(--text-faint)]">Daftarkan anggota tim teknis baru</div></div></div>
+      <button class="btn btn-ghost" onclick="closeModal('engineerModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="engineerForm" class="space-y-4">
+        <div><label class="form-label">Nama Lengkap</label><input type="text" name="nama" class="form-input" placeholder="cth. Budi Santoso" required></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="form-label">Spesialisasi</label><select name="spesialisasi" class="form-select" required><option value="Server">Server</option><option value="Storage">Storage</option><option value="SAN Switch">SAN Switch</option></select></div>
+          <div><label class="form-label">Status</label><select name="status" class="form-select" required><option value="Available">Available</option><option value="On-Site">On-Site</option><option value="On-Leave">On-Leave</option></select></div>
+        </div>
+        <div><label class="form-label">Sertifikasi</label><input type="text" name="sertifikasi" class="form-input" placeholder="cth. Brocade BCFA, Dell EMC Proven, HPE ATP"></div>
+        <div><label class="form-label">No. Telepon</label><input type="text" name="telepon" class="form-input" placeholder="cth. +62 812 xxxx xxxx" required></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('engineerModal')">Batal</button><button class="btn btn-primary" onclick="saveEngineer()"><i class="fa-solid fa-check"></i> Simpan</button></div>
+  </div>
+</div>
+
+<!-- MODAL: TAMBAH TASK -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-[var(--accent)] bg-opacity-15 flex items-center justify-center"><i class="fa-solid fa-clipboard-plus text-[var(--accent)]"></i></div><div><div class="font-semibold text-base">Tambah Task</div><div class="text-xs text-[var(--text-faint)]">Buat task instalasi atau maintenance baru</div></div></div>
+      <button class="btn btn-ghost" onclick="closeModal('taskModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="taskForm" class="space-y-4">
+        <input type="hidden" name="task_id">
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="form-label">Jenis Task</label><select name="jenis" class="form-select" required><option value="Installation">Installation</option><option value="Maintenance">Maintenance</option></select></div>
+          <div><label class="form-label">Kategori</label><select name="kategori" class="form-select" required><option value="Server">Server</option><option value="Storage">Storage</option><option value="SAN">SAN</option></select></div>
+        </div>
+        <div><label class="form-label">Judul Task</label><input type="text" name="judul" class="form-input" placeholder="cth. Rack Installation DC-2 Row C" required></div>
+        <div><label class="form-label">Lokasi</label><input type="text" name="lokasi" class="form-input" placeholder="cth. Data Center 2 / Rack C-12" required></div>
+        <div><label class="form-label">Assigned Engineer</label><select name="assigned_engineer_id" class="form-select" required><option value="">— Pilih Engineer —</option></select></div>
+        
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="form-label">Tanggal & Jam Mulai</label>
+            <input type="datetime-local" name="start_datetime" class="form-input" required>
+          </div>
+          <div>
+            <label class="form-label">Tanggal & Jam Berakhir</label>
+            <input type="datetime-local" name="end_datetime" class="form-input" required>
+          </div>
+        </div>
+        <div><label class="form-label">Status</label><select name="status" class="form-select" required><option value="Planned">Planned</option><option value="In-Progress">In-Progress</option><option value="Completed">Completed</option></select></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('taskModal')">Batal</button><button class="btn btn-primary" onclick="saveTask()"><i class="fa-solid fa-check"></i> Simpan</button></div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT TASK -->
+<div class="modal-overlay" id="editTaskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-[var(--warning)] bg-opacity-15 flex items-center justify-center"><i class="fa-solid fa-pen-to-square text-[var(--warning)]"></i></div><div><div class="font-semibold text-base">Edit Task</div><div class="text-xs text-[var(--text-faint)]">Update informasi task</div></div></div>
+      <button class="btn btn-ghost" onclick="closeModal('editTaskModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="editTaskForm" class="space-y-4">
+        <input type="hidden" name="task_id">
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="form-label">Jenis Task</label><select name="jenis" class="form-select" required><option value="Installation">Installation</option><option value="Maintenance">Maintenance</option></select></div>
+          <div><label class="form-label">Kategori</label><select name="kategori" class="form-select" required><option value="Server">Server</option><option value="Storage">Storage</option><option value="SAN">SAN</option></select></div>
+        </div>
+        <div><label class="form-label">Judul Task</label><input type="text" name="judul" class="form-input" required></div>
+        <div><label class="form-label">Lokasi</label><input type="text" name="lokasi" class="form-input" required></div>
+        <div><label class="form-label">Assigned Engineer</label><select name="assigned_engineer_id" class="form-select" required></select></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="form-label">Tanggal & Jam Mulai</label><input type="datetime-local" name="start_datetime" class="form-input" required></div>
+          <div><label class="form-label">Tanggal & Jam Berakhir</label><input type="datetime-local" name="end_datetime" class="form-input" required></div>
+        </div>
+        <div><label class="form-label">Status</label><select name="status" class="form-select" required><option value="Planned">Planned</option><option value="In-Progress">In-Progress</option><option value="Completed">Completed</option></select></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('editTaskModal')">Batal</button><button class="btn btn-primary" onclick="saveEditTask()"><i class="fa-solid fa-check"></i> Update</button></div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT ENGINEER STATUS -->
+<div class="modal-overlay" id="editEngModal">
+  <div class="modal" style="max-width: 400px;">
+    <div class="modal-header">
+      <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-[var(--warning)] bg-opacity-15 flex items-center justify-center"><i class="fa-solid fa-user-pen text-[var(--warning)]"></i></div><div><div class="font-semibold text-base">Edit Status Engineer</div><div class="text-xs text-[var(--text-faint)]" id="editEngName">-</div></div></div>
+      <button class="btn btn-ghost" onclick="closeModal('editEngModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="editEngForm" class="space-y-4">
+        <input type="hidden" name="id">
+        <div><label class="form-label">Status</label><select name="status" class="form-select" required><option value="Available">Available</option><option value="On-Site">On-Site</option><option value="On-Leave">On-Leave</option></select></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('editEngModal')">Batal</button><button class="btn btn-primary" onclick="saveEditEngineer()"><i class="fa-solid fa-check"></i> Update</button></div>
+  </div>
+</div>
+
+<!-- MODAL: TAMBAH DOKUMENTASI -->
+<div class="modal-overlay" id="docModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-[var(--accent)] bg-opacity-15 flex items-center justify-center"><i class="fa-solid fa-file-circle-plus text-[var(--accent)]"></i></div><div><div class="font-semibold text-base">Tambah Dokumentasi</div><div class="text-xs text-[var(--text-faint)]">Catatan kerja & laporan teknis</div></div></div>
+      <button class="btn btn-ghost" onclick="closeModal('docModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="docForm" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="form-label">Tipe Dokumen</label>
+            <select name="tipe" class="form-select" required onchange="handleDocTypeChange(this.value)">
+              <option value="bast">BAST</option>
+              <option value="hld_lld">HLD/LLD</option>
+              <option value="asesmen">Asesmen</option>
+              <option value="uat">UAT</option>
+              <option value="instalasi">Dokumen Instalasi</option>
+              <option value="mop">MOP</option>
+              <option value="preventive">Preventive Maintenance</option>
+              <option value="corrective">Corrective Maintenance</option>
+              <option value="relokasi">Relokasi</option>
+            </select>
+          </div>
+          <div><label class="form-label">Task ID Terkait</label><input type="text" name="task_id" class="form-input" placeholder="TSK-xxxx (opsional)"></div>
+        </div>
+        <div><label class="form-label">Judul</label><input type="text" name="judul" class="form-input" placeholder="cth. BAST Rack C-12 Installation" required></div>
+        
+        <div id="mopFields" class="hidden-dyn space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="form-label">Dikerjakan oleh (Engineer)</label>
+              <select name="mop_engineer" class="form-select">
+                <option value="">— Pilih Engineer —</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Dokumen Controller</label>
+              <input type="text" name="mop_controller" class="form-input" placeholder="Nama Dokumen Controller">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="form-label">Review oleh (Manager)</label>
+              <input type="text" name="mop_reviewer" class="form-input" placeholder="Nama Manager">
+            </div>
+            <div>
+              <label class="form-label">Approved oleh (Customer)</label>
+              <input type="text" name="mop_approver" class="form-input" placeholder="Nama Customer">
+            </div>
+          </div>
+        </div>
+
+        <div id="nonMopFields" class="space-y-4">
+          <div><label class="form-label">SOP Checklist</label><textarea name="sop_checklist" class="form-textarea" rows="3" placeholder="✓ Power connection verified&#10;✓ Cable management installed"></textarea></div>
+          <div>
+            <label class="form-label">Upload File (Lokal)</label>
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+              <i class="fa-solid fa-cloud-arrowup file-icon"></i>
+              <div class="text-sm font-medium" id="uploadText">Klik untuk pilih file</div>
+              <div class="text-[10px] text-[var(--text-faint)] mt-1">File akan disimpan secara lokal di browser</div>
+              <input type="file" id="fileInput" class="hidden" onchange="handleFileUpload(this)">
+            </div>
+            <div id="fileList" class="mt-2 space-y-1"></div>
+            <input type="hidden" name="file_url" id="fileUrlField">
+          </div>
+        </div>
+
+        <div><label class="form-label">Daftar Isi / SOP Checklist</label><textarea name="sop_checklist" id="sopChecklist" class="form-textarea" rows="4" placeholder="1. Pre-check&#10;2. Implementation steps&#10;3. Post-check verification"></textarea></div>
+        <div><label class="form-label">Notes</label><textarea name="notes" class="form-textarea" rows="3" placeholder="Catatan tambahan..."></textarea></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('docModal')">Batal</button>
+      <button class="btn btn-primary" onclick="saveDoc()"><i class="fa-solid fa-check"></i> Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// SEED DATA
+const today = new Date();
+const addHours = (h) => { const x = new Date(today); x.setHours(x.getHours() + h); return x.toISOString().slice(0,16); };
+
+const SEED_ENGINEERS = [
+  { id: 'ENG-001', nama: 'Andi Pratama', spesialisasi: 'SAN Switch', sertifikasi: 'Brocade BCFA, BCFP', status: 'Available', telepon: '+62 812 1111 2222' },
+  { id: 'ENG-002', nama: 'Budi Santoso', spesialisasi: 'Storage', sertifikasi: 'Dell EMC Proven Professional', status: 'On-Site', telepon: '+62 812 2222 3333' },
+  { id: 'ENG-003', nama: 'Citra Dewi', spesialisasi: 'Server', sertifikasi: 'HPE ATP Server, ITIL v4', status: 'Available', telepon: '+62 812 3333 4444' },
+  { id: 'ENG-004', nama: 'Dimas Wijaya', spesialisasi: 'Server', sertifikasi: 'Dell EMC PowerEdge Spec.', status: 'On-Leave', telepon: '+62 812 4444 5555' },
+  { id: 'ENG-005', nama: 'Eka Putri', spesialisasi: 'Storage', sertifikasi: 'NetApp NCDA, NCIE-SAN', status: 'Available', telepon: '+62 812 5555 6666' },
+  { id: 'ENG-006', nama: 'Fajar Nugroho', spesialisasi: 'SAN Switch', sertifikasi: 'Cisco MDS DCNI', status: 'On-Site', telepon: '+62 812 6666 7777' },
+  { id: 'ENG-007', nama: 'Gita Maharani', spesialisasi: 'Server', sertifikasi: 'HPE ASE, VMware VCP', status: 'Available', telepon: '+62 812 7777 8888' },
+];
+
+const SEED_TASKS = [
+  { task_id: 'TSK-001', jenis: 'Installation', kategori: 'Server', judul: 'Rack Installation DC-2 Row C', lokasi: 'DC-2 / Rack C-12', assigned_engineer_id: 'ENG-003', start_datetime: addHours(-48), end_datetime: addHours(24), status: 'In-Progress' },
+  { task_id: 'TSK-002', jenis: 'Maintenance', kategori: 'SAN', judul: 'Zoning SAN Switch DC1-Core', lokasi: 'DC-1 / Rack A-01', assigned_engineer_id: 'ENG-001', start_datetime: addHours(0), end_datetime: addHours(48), status: 'In-Progress' },
+  { task_id: 'TSK-003', jenis: 'Installation', kategori: 'Storage', judul: 'Dell PowerStore 3200T Deployment', lokasi: 'DC-1 / Rack B-04', assigned_engineer_id: 'ENG-002', start_datetime: addHours(2), end_datetime: addHours(72), status: 'Planned' },
+  { task_id: 'TSK-004', jenis: 'Maintenance', kategori: 'Server', judul: 'Firmware Update HPE Synergy', lokasi: 'DC-1 / Rack A-08', assigned_engineer_id: 'ENG-007', start_datetime: addHours(24), end_datetime: addHours(36), status: 'Planned' },
+  { task_id: 'TSK-005', jenis: 'Installation', kategori: 'SAN', judul: 'Brocade G630 Deployment', lokasi: 'DC-2 / Rack D-02', assigned_engineer_id: 'ENG-006', start_datetime: addHours(72), end_datetime: addHours(96), status: 'Planned' },
+  { task_id: 'TSK-006', jenis: 'Maintenance', kategori: 'Storage', judul: 'NetApp FAS Routine Maintenance', lokasi: 'DC-1 / Rack B-02', assigned_engineer_id: 'ENG-005', start_datetime: addHours(-120), end_datetime: addHours(-48), status: 'Completed' },
+  { task_id: 'TSK-007', jenis: 'Installation', kategori: 'Server', judul: 'HPE ProLiant DL380 Gen11 Setup', lokasi: 'DC-2 / Rack C-08', assigned_engineer_id: 'ENG-007', start_datetime: addHours(-168), end_datetime: addHours(-96), status: 'Completed' },
+  { task_id: 'TSK-008', jenis: 'Maintenance', kategori: 'SAN', judul: 'Cisco MDS 9396T Firmware Upgrade', lokasi: 'DC-1 / Rack A-02', assigned_engineer_id: 'ENG-001', start_datetime: addHours(12), end_datetime: addHours(24), status: 'Planned' },
+];
+
+// DATA DOKUMEN DIKOSONGKAN TOTAL
+const SEED_DOCS = [];
+
+const DB = {
+  engineers: 'hss2_engineers', 
+  tasks: 'hss2_tasks', 
+  docs: 'hss2_docs_v2', // Key diubah untuk memaksa reset data dokumen lama yang tersimpan di browser
+  logs: 'hss2_logs',
+  load(key) { try { const data = localStorage.getItem(key); return data ? JSON.parse(data) : null; } catch (e) { return null; } },
+  save(key, data) { localStorage.setItem(key, JSON.stringify(data)); },
+  init() {
+    if (!this.load(this.engineers)) this.save(this.engineers, SEED_ENGINEERS);
+    if (!this.load(this.tasks)) this.save(this.tasks, SEED_TASKS);
+    if (!this.load(this.docs)) this.save(this.docs, SEED_DOCS); // Akan menyimpan array kosong []
+    if (!this.load(this.logs)) this.save(this.logs, []);
+  },
+  get(table) { return this.load(this[table]) || []; },
+  insert(table, item) { const data = this.get(table); data.push(item); this.save(this[table], data); },
+  update(table, id, patch) { const data = this.get(table); const idx = data.findIndex(x => (x.id || x.task_id || x.doc_id) === id); if (idx >= 0) { data[idx] = { ...data[idx], ...patch }; this.save(this[table], data); } },
+  delete(table, id) { let data = this.get(table); data = data.filter(x => (x.id || x.task_id || x.doc_id) !== id); this.save(this[table], data); }
+};
+DB.init();
+
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+function genId(prefix) { return `${prefix}-${String(Date.now()).slice(-6)}${Math.floor(Math.random() * 99).toString().padStart(2, '0')}`; }
+function getEngineer(id) { return DB.get('engineers').find(e => e.id === id); }
+function formatDateTime(dtStr) {
+  if (!dtStr) return '-';
+  const d = new Date(dtStr);
+  return d.toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+}
+function getCalendarDate(dtStr) {
+  if (!dtStr) return '';
+  return new Date(dtStr).toISOString().slice(0,10);
+}
+
+function showToast(msg, type = 'info', icon = null) {
+  const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<i class="fa-solid ${icon || icons[type]} text-[var(--${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'})]"></i><div class="text-sm flex-1">${msg}</div>`;
+  $('#toastContainer').appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(20px)'; setTimeout(() => toast.remove(), 300); }, 3500);
+}
+
+// ACTIVITY LOGGER
+function logActivity(action, description) {
+  const log = {
+    id: genId('LOG'),
+    timestamp: new Date().toISOString(),
+    action: action,
+    description: description
+  };
+  DB.insert('logs', log);
+  if ($('#view-logs').classList.contains('active')) renderLogs();
+}
+
+// AUTH SYSTEM
+let pendingAction = null;
+function requireAuth(action, ...args) {
+  pendingAction = { action, args };
+  $('#authUser').value = '';
+  $('#authPass').value = '';
+  openModal('authModal');
+  setTimeout(() => $('#authUser').focus(), 100);
+}
+
+function confirmAuth() {
+  const user = $('#authUser').value.trim();
+  const pass = $('#authPass').value.trim();
+  if (user === 'admin' && pass === 'admin123') {
+    closeModal('authModal');
+    showToast('Autentikasi berhasil', 'success');
+    if (pendingAction) {
+      const { action, args } = pendingAction;
+      pendingAction = null;
+      setTimeout(() => action(...args), 200);
+    }
+  } else {
+    showToast('Username atau password salah', 'error');
+  }
+}
+
+function clearLogsAdminAuth() {
+  requireAuth(() => {
+    if (confirm('Hapus SEMUA log aktivitas? Tindakan ini tidak dapat dibatalkan.')) {
+      localStorage.removeItem(DB.logs);
+      DB.init();
+      logActivity('DELETE', 'Menghapus seluruh log aktivitas sistem.');
+      showToast('Semua log aktivitas telah dihapus', 'success');
+      renderLogs();
+    }
+  });
+}
+
+// MODAL CONTROL
+function openModal(id) {
+  if (id === 'taskModal') {
+    const sel = document.querySelector('#taskForm select[name="assigned_engineer_id"]');
+    sel.innerHTML = '<option value="">— Pilih Engineer —</option>' + DB.get('engineers').map(e => `<option value="${e.id}">${e.nama} · ${e.spesialisasi}</option>`).join('');
+    document.querySelector('#taskForm input[name="start_datetime"]').value = new Date().toISOString().slice(0,16);
+  }
+  if (id === 'editTaskModal') {
+    const sel = document.querySelector('#editTaskForm select[name="assigned_engineer_id"]');
+    sel.innerHTML = '<option value="">— Pilih Engineer —</option>' + DB.get('engineers').map(e => `<option value="${e.id}">${e.nama} · ${e.spesialisasi}</option>`).join('');
+  }
+  if (id === 'docModal') {
+    const sel = document.querySelector('#docForm select[name="mop_engineer"]');
+    sel.innerHTML = '<option value="">— Pilih Engineer —</option>' + DB.get('engineers').map(e => `<option value="${e.id}">${e.nama}</option>`).join('');
+    handleDocTypeChange('bast');
+  }
+  document.getElementById(id).classList.add('active');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+  const form = document.querySelector(`#${id} form`);
+  if (form) form.reset();
+}
+
+function handleDocTypeChange(val) {
+  const mopFields = $('#mopFields');
+  const nonMopFields = $('#nonMopFields');
+  if (val === 'mop') {
+    mopFields.classList.remove('hidden-dyn');
+    nonMopFields.classList.add('hidden-dyn');
+  } else {
+    mopFields.classList.add('hidden-dyn');
+    nonMopFields.classList.remove('hidden-dyn');
+  }
+}
+
+function navigate(view) {
+  $$('.nav-pill').forEach(p => p.classList.toggle('active', p.dataset.view === view));
+  $$('.view').forEach(v => v.classList.toggle('active', v.id === `view-${view}`));
+  if (view === 'dashboard') renderDashboard();
+  if (view === 'engineers') renderEngineers();
+  if (view === 'tasks') renderTasks();
+  if (view === 'docs') renderDocs();
+  if (view === 'logs') renderLogs();
+}
+ $$('.nav-pill').forEach(p => p.addEventListener('click', () => navigate(p.dataset.view)));
+
+function updateLiveTime() { $('#liveTime').textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }); }
+setInterval(updateLiveTime, 1000); updateLiveTime();
+
+let chartTasks, chartDocs;
+function renderDashboard() {
+  const engineers = DB.get('engineers');
+  const tasks = DB.get('tasks');
+  const docs = DB.get('docs');
+  
+  $('#kpiEngineers').textContent = engineers.length;
+  $('#kpiEngAvail').textContent = engineers.filter(e => e.status === 'Available').length;
+  $('#kpiTasks').textContent = tasks.filter(t => t.status !== 'Completed').length;
+  $('#kpiTaskProg').textContent = tasks.filter(t => t.status === 'In-Progress').length;
+  $('#kpiTaskPlan').textContent = tasks.filter(t => t.status === 'Planned').length;
+  $('#kpiDone').textContent = tasks.filter(t => t.status === 'Completed').length;
+  $('#kpiDocs').textContent = docs.length;
+  
+  $('#navEngCount').textContent = engineers.length;
+  $('#navTaskCount').textContent = tasks.filter(t => t.status !== 'Completed').length;
+  
+  const urgent = tasks.filter(t => t.status !== 'Completed').sort((a, b) => new Date(a.end_datetime) - new Date(b.end_datetime)).slice(0, 4);
+  $('#urgentTasksList').innerHTML = urgent.length ? urgent.map(t => {
+    const eng = getEngineer(t.assigned_engineer_id);
+    const dLeft = Math.ceil((new Date(t.end_datetime) - new Date()) / 86400000);
+    const urgency = dLeft < 0 ? 'danger' : dLeft <= 1 ? 'warning' : 'normal';
+    return `<div class="p-3 hover:bg-[var(--bg-hover)] rounded-lg transition cursor-pointer" onclick="navigate('tasks')">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate">${t.judul}</div>
+          <div class="flex items-center gap-2 mt-1 text-xs text-[var(--text-faint)]">
+            <span class="mono">${t.task_id}</span><span>·</span>
+            <span><i class="fa-solid fa-user text-[9px]"></i> ${eng ? eng.nama.split(' ')[0] : '-'}</span><span>·</span>
+            <span><i class="fa-solid fa-location-dot text-[9px]"></i> ${t.lokasi}</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs mono text-[var(--${urgency})] font-semibold">${dLeft < 0 ? Math.abs(dLeft) + 'd over' : dLeft + 'd left'}</div>
+          <div class="text-[10px] text-[var(--text-faint)] mt-1">${t.status}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('') : '<div class="p-6 text-center text-[var(--text-faint)] text-sm">Tidak ada task aktif</div>';
+  
+  const engStatus = engineers.filter(e => e.status !== 'Available').slice(0, 4);
+  $('#engineerStatusList').innerHTML = engStatus.length ? engStatus.map(e => `
+    <div class="p-3 hover:bg-[var(--bg-hover)] rounded-lg transition cursor-pointer" onclick="navigate('engineers')">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="status-dot ${e.status === 'On-Site' ? 'on-site' : 'on-leave'}"></span>
+          <div class="min-w-0">
+            <div class="text-sm font-medium truncate">${e.nama}</div>
+            <div class="text-xs text-[var(--text-faint)] mono truncate">${e.id} · ${e.spesialisasi}</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs mono font-semibold text-[var(--${e.status === 'On-Site' ? 'warning' : 'text-faint'})]">${e.status}</div>
+        </div>
+      </div>
+    </div>
+  `).join('') : '<div class="p-6 text-center text-[var(--text-faint)] text-sm">Semua engineer available</div>';
+  
+  setTimeout(() => { drawTaskChart(); drawDocChart(); }, 50);
+}
+
+function drawTaskChart() {
+  const ctx = document.getElementById('chartTasks');
+  if (!ctx) return;
+  if (chartTasks) chartTasks.destroy();
+  const months = ['Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  const tasks = DB.get('tasks');
+  chartTasks = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: months, datasets: [
+      { label: 'Installation', data: [4, 6, 5, 8, 7, tasks.filter(t => t.jenis === 'Installation').length], backgroundColor: '#4cc2ff', borderRadius: 6, barPercentage: 0.6 },
+      { label: 'Maintenance', data: [3, 4, 6, 5, 4, tasks.filter(t => t.jenis === 'Maintenance').length], backgroundColor: '#ffb800', borderRadius: 6, barPercentage: 0.6 }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#94a3a0', font: { size: 11 } } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3a0', font: { size: 11 } }, beginAtZero: true } } }
+  });
+}
+
+function drawDocChart() {
+  const ctx = document.getElementById('chartDocs');
+  if (!ctx) return;
+  if (chartDocs) chartDocs.destroy();
+  const docs = DB.get('docs');
+  const labels = { bast: 'BAST', hld_lld: 'HLD/LLD', asesmen: 'Asesmen', uat: 'UAT', instalasi: 'Instalasi', mop: 'MOP', preventive: 'Preventive', corrective: 'Corrective', relokasi: 'Relokasi' };
+  const counts = {};
+  Object.keys(labels).forEach(k => counts[k] = 0);
+  docs.forEach(d => counts[d.tipe]++);
+  chartDocs = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: Object.values(labels), datasets: [{ data: Object.values(counts), backgroundColor: ['#ff7a1a', '#00d9a3', '#4cc2ff', '#b67aff', '#ffb800', '#ff3b5c', '#00d9a3', '#4cc2ff', '#b67aff'], borderColor: '#161e21', borderWidth: 3 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3a0', font: { size: 10 }, padding: 8, usePointStyle: true, pointStyle: 'circle' } } } }
+  });
+}
+
+// ENGINEERS MODULE
+function renderEngineers() {
+  const search = $('#engineerSearch').value.toLowerCase();
+  const fSpec = $('#filterSpec').value;
+  const fStatus = $('#filterStatus').value;
+  let engineers = DB.get('engineers').filter(e => {
+    if (search && !e.nama.toLowerCase().includes(search)) return false;
+    if (fSpec && e.spesialisasi !== fSpec) return false;
+    if (fStatus && e.status !== fStatus) return false;
+    return true;
+  });
+  const colors = { Server: '#4cc2ff', Storage: '#00d9a3', 'SAN Switch': '#b67aff' };
+  $('#engineersGrid').innerHTML = engineers.map(e => {
+    const activeTask = DB.get('tasks').find(t => t.assigned_engineer_id === e.id && t.status === 'In-Progress');
+    const initials = e.nama.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+    return `<div class="engineer-card">
+      <div class="flex items-start justify-between mb-3">
+        <div class="flex items-center gap-3">
+          <div class="engineer-avatar" style="background: linear-gradient(135deg, ${colors[e.spesialisasi]}, ${colors[e.spesialisasi]}80)">${initials}</div>
+          <div><div class="font-semibold text-sm">${e.nama}</div><div class="text-[10px] mono text-[var(--text-faint)]">${e.id}</div></div>
+        </div>
+        <span class="status-dot ${e.status === 'Available' ? 'available' : e.status === 'On-Site' ? 'on-site' : 'on-leave'}"></span>
+      </div>
+      <div class="space-y-2">
+        <div class="flex items-center gap-2">
+          <span class="spec-badge" style="border-color: ${colors[e.spesialisasi]}40; color: ${colors[e.spesialisasi]}; background: ${colors[e.spesialisasi]}10"><i class="fa-solid fa-microchip"></i> ${e.spesialisasi}</span>
+          <span class="spec-badge">${e.status}</span>
+        </div>
+        <div class="text-xs text-[var(--text-dim)]"><i class="fa-solid fa-certificate text-[var(--text-faint)]"></i> ${e.sertifikasi || '-'}</div>
+        <div class="text-xs text-[var(--text-dim)]"><i class="fa-solid fa-phone text-[var(--text-faint)]"></i> ${e.telepon || ''}</div>
+        ${activeTask ? `<div class="text-xs p-2 rounded-md bg-[var(--bg)] border border-[var(--border)]"><div class="text-[10px] text-[var(--text-faint)] uppercase tracking-wider mb-0.5">Active Task</div><div class="text-[var(--warning)] mono">${activeTask.task_id}</div><div class="truncate">${activeTask.judul}</div></div>` : ''}
+      </div>
+      <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-[var(--border)]">
+        <button class="btn btn-ghost px-2 py-1 text-xs" onclick="event.stopPropagation(); promptEditEngineerStatus('${e.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+        <button class="btn btn-danger px-2 py-1 text-xs" onclick="event.stopPropagation(); deleteEngineer('${e.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+  if (engineers.length === 0) { $('#engineersGrid').innerHTML = '<div class="col-span-full p-12 text-center text-[var(--text-faint)]"><i class="fa-solid fa-user-slash text-3xl mb-3"></i><div>Tidak ada engineer ditemukan</div></div>'; }
+}
+
+ $('#engineerSearch')?.addEventListener('input', renderEngineers);
+ $('#filterSpec')?.addEventListener('change', renderEngineers);
+ $('#filterStatus')?.addEventListener('change', renderEngineers);
+
+function saveEngineer() {
+  const form = $('#engineerForm');
+  const obj = Object.fromEntries(new FormData(form));
+  if (!obj.nama || !obj.telepon) { showToast('Nama dan No. Telepon wajib diisi', 'error'); return; }
+  const existing = DB.get('engineers');
+  if (existing.some(e => e.nama.toLowerCase() === obj.nama.toLowerCase())) { showToast('Nama engineer sudah terdaftar!', 'error'); return; }
+  if (existing.some(e => e.telepon === obj.telepon)) { showToast('No. telepon sudah terdaftar!', 'error'); return; }
+  obj.id = genId('ENG');
+  DB.insert('engineers', obj);
+  logActivity('CREATE', `Menambahkan engineer baru: ${obj.nama} (${obj.id})`);
+  closeModal('engineerModal');
+  showToast(`Engineer ${obj.nama} berhasil ditambahkan`, 'success');
+  renderEngineers(); renderDashboard();
+}
+
+function promptEditEngineerStatus(id) {
+  const eng = getEngineer(id);
+  if (!eng) return;
+  const form = $('#editEngForm');
+  form.elements['id'].value = eng.id;
+  form.elements['status'].value = eng.status;
+  $('#editEngName').textContent = eng.nama;
+  openModal('editEngModal');
+}
+
+function saveEditEngineer() {
+  const form = $('#editEngForm');
+  const id = form.elements['id'].value;
+  const status = form.elements['status'].value;
+  const oldStatus = getEngineer(id).status;
+  DB.update('engineers', id, { status });
+  logActivity('UPDATE', `Mengubah status engineer ${getEngineer(id).nama} dari ${oldStatus} menjadi ${status}`);
+  closeModal('editEngModal');
+  showToast('Status engineer diperbarui', 'success');
+  renderEngineers(); renderDashboard();
+}
+
+function deleteEngineer(id) {
+  const eng = getEngineer(id);
+  if (!eng) return;
+  if (confirm(`Hapus engineer ${eng.nama}?`)) {
+    DB.delete('engineers', id);
+    logActivity('DELETE', `Menghapus engineer: ${eng.nama} (${id})`);
+    showToast('Engineer dihapus', 'success');
+    renderEngineers(); renderDashboard();
+  }
+}
+
+// TASKS MODULE
+let currentTaskView = 'kanban';
+let calCurrentMonth = new Date();
+
+ $$('.tab-btn[data-tview]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('.tab-btn[data-tview]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTaskView = btn.dataset.tview;
+    $$('.task-view').forEach(v => v.classList.add('hidden'));
+    $(`#taskView-${currentTaskView}`).classList.remove('hidden');
+    renderTasks();
+  });
+});
+
+function renderTasks() {
+  if (currentTaskView === 'kanban') renderKanban();
+  if (currentTaskView === 'calendar') renderCalendar();
+  if (currentTaskView === 'list') renderTaskList();
+}
+
+function renderKanban() {
+  const tasks = DB.get('tasks');
+  const cols = { Planned: $('#colPlanned'), 'In-Progress': $('#colProgress'), Completed: $('#colDone') };
+  Object.keys(cols).forEach(k => cols[k].innerHTML = '');
+  ['Planned', 'In-Progress', 'Completed'].forEach(status => {
+    const filtered = tasks.filter(t => t.status === status);
+    $('#cnt' + (status === 'Planned' ? 'Planned' : status === 'In-Progress' ? 'Progress' : 'Done')).textContent = filtered.length;
+    filtered.forEach(t => cols[status].insertAdjacentHTML('beforeend', taskCardHTML(t)));
+  });
+  $$('.task-card').forEach(card => {
+    card.addEventListener('dragstart', (e) => { card.classList.add('dragging'); e.dataTransfer.setData('text', card.dataset.id); });
+    card.addEventListener('dragend', () => card.classList.remove('dragging'));
+  });
+  $$('.kanban-col-body').forEach(col => {
+    col.addEventListener('dragover', (e) => { e.preventDefault(); col.classList.add('drag-over'); });
+    col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+    col.addEventListener('drop', (e) => {
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      const id = e.dataTransfer.getData('text');
+      const newStatus = col.parentElement.dataset.status;
+      updateTaskStatus(id, newStatus);
+    });
+  });
+}
+
+function updateTaskStatus(id, newStatus) {
+  const task = DB.get('tasks').find(t => t.task_id === id);
+  if (task && task.status !== newStatus) {
+    const oldStatus = task.status;
+    DB.update('tasks', id, { status: newStatus });
+    logActivity('UPDATE', `Mengubah status task ${task.judul} (${id}) dari ${oldStatus} menjadi ${newStatus}`);
+    showToast(`Task ${id} → ${newStatus}`, 'success');
+    renderTasks(); renderDashboard();
+  }
+}
+
+function taskCardHTML(t) {
+  const eng = getEngineer(t.assigned_engineer_id);
+  const dLeft = Math.ceil((new Date(t.end_datetime) - new Date()) / 86400000);
+  const urgency = dLeft < 0 ? 'danger' : dLeft <= 1 ? 'warning' : 'normal';
+  return `<div class="task-card ${t.jenis.toLowerCase()}" draggable="true" data-id="${t.task_id}">
+    <div class="flex items-start justify-between gap-2 mb-2">
+      <span class="spec-badge ${t.jenis === 'Installation' ? 'text-[var(--info)] border-[var(--info)]40' : 'text-[var(--purple)] border-[var(--purple)]40'}">${t.jenis}</span>
+      <span class="text-[10px] mono text-[var(--text-faint)]">${t.task_id}</span>
+    </div>
+    <div class="text-sm font-medium mb-2">${t.judul}</div>
+    <div class="space-y-1 text-xs text-[var(--text-dim)]">
+      <div><i class="fa-solid fa-tag text-[var(--text-faint)]"></i> ${t.kategori}</div>
+      <div><i class="fa-solid fa-location-dot text-[var(--text-faint)]"></i> ${t.lokasi}</div>
+      <div><i class="fa-solid fa-user text-[var(--text-faint)]"></i> ${eng ? eng.nama : '-'}</div>
+      <div class="mono text-[10px]"><i class="fa-regular fa-clock text-[var(--text-faint)]"></i> ${formatDateTime(t.start_datetime)} → ${formatDateTime(t.end_datetime)}</div>
+    </div>
+    <div class="flex items-center justify-between mt-3 pt-2 border-t border-[var(--border)]">
+      <div class="text-[10px] mono text-[var(--${urgency})] font-semibold">${dLeft < 0 ? Math.abs(dLeft) + 'd late' : dLeft + 'd left'}</div>
+      <div class="flex gap-1">
+        <button class="btn btn-ghost px-2 py-1 text-xs" onclick="event.stopPropagation(); openEditTaskModal('${t.task_id}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn btn-danger px-2 py-1 text-xs" onclick="event.stopPropagation(); deleteTask('${t.task_id}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderTaskList() {
+  const tasks = DB.get('tasks');
+  $('#taskTableBody').innerHTML = tasks.map(t => {
+    const eng = getEngineer(t.assigned_engineer_id);
+    return `<tr>
+      <td class="mono text-[var(--accent)]">${t.task_id}</td>
+      <td>${t.judul}</td>
+      <td>${eng ? eng.nama : '-'}</td>
+      <td class="mono text-xs">${formatDateTime(t.start_datetime)}</td>
+      <td class="mono text-xs">${formatDateTime(t.end_datetime)}</td>
+      <td><span class="status-dot ${t.status === 'Completed' ? 'available' : t.status === 'In-Progress' ? 'on-site' : 'normal'}"></span> ${t.status}</td>
+      <td class="flex gap-1">
+        <button class="btn btn-ghost px-2 py-1 text-xs" onclick="openEditTaskModal('${t.task_id}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn btn-danger px-2 py-1 text-xs" onclick="deleteTask('${t.task_id}')"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function deleteTask(id) {
+  const t = DB.get('tasks').find(x => x.task_id === id);
+  if (t && confirm(`Hapus task: ${t.judul}?`)) {
+    DB.delete('tasks', id);
+    logActivity('DELETE', `Menghapus task: ${t.judul} (${id})`);
+    showToast('Task dihapus', 'success');
+    renderTasks(); renderDashboard();
+  }
+}
+
+function openEditTaskModal(id) {
+  const t = DB.get('tasks').find(x => x.task_id === id);
+  if (!t) return;
+  openModal('editTaskModal'); 
+  const form = $('#editTaskForm');
+  form.elements['task_id'].value = t.task_id;
+  form.elements['jenis'].value = t.jenis;
+  form.elements['kategori'].value = t.kategori;
+  form.elements['judul'].value = t.judul;
+  form.elements['lokasi'].value = t.lokasi;
+  form.elements['assigned_engineer_id'].value = t.assigned_engineer_id;
+  form.elements['start_datetime'].value = t.start_datetime;
+  form.elements['end_datetime'].value = t.end_datetime;
+  form.elements['status'].value = t.status;
+}
+
+function saveEditTask() {
+  const form = $('#editTaskForm');
+  const obj = Object.fromEntries(new FormData(form));
+  if (!obj.judul || !obj.assigned_engineer_id) { showToast('Lengkapi data task', 'error'); return; }
+  DB.update('tasks', obj.task_id, obj);
+  logActivity('UPDATE', `Memperbarui data task: ${obj.judul} (${obj.task_id})`);
+  closeModal('editTaskModal');
+  showToast(`Task ${obj.task_id} diperbarui`, 'success');
+  renderTasks(); renderDashboard();
+}
+
+function saveTask() {
+  const form = $('#taskForm');
+  const obj = Object.fromEntries(new FormData(form));
+  if (!obj.judul || !obj.assigned_engineer_id) { showToast('Lengkapi data task', 'error'); return; }
+  obj.task_id = genId('TSK');
+  DB.insert('tasks', obj);
+  logActivity('CREATE', `Menambahkan task baru: ${obj.judul} (${obj.task_id})`);
+  closeModal('taskModal');
+  showToast(`Task ${obj.task_id} dibuat`, 'success');
+  renderTasks(); renderDashboard();
+}
+
+// CALENDAR MODULE
+function renderCalendar() {
+  const year = calCurrentMonth.getFullYear();
+  const month = calCurrentMonth.getMonth();
+  const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  $('#calMonthLabel').textContent = `${monthNames[month]} ${year}`;
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevMonthDays = new Date(year, month, 0).getDate();
+  let html = '';
+  for (let i = firstDay - 1; i >= 0; i--) html += `<div class="calendar-day other-month"><div class="day-num">${prevMonthDays - i}</div></div>`;
+  const today = new Date();
+  const tasks = DB.get('tasks');
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === d;
+    const dayTasks = tasks.filter(t => getCalendarDate(t.start_datetime) <= dateStr && getCalendarDate(t.end_datetime) >= dateStr);
+    let taskHTML = '';
+    dayTasks.slice(0, 3).forEach(t => {
+      const color = t.jenis === 'Installation' ? 'var(--info)' : 'var(--purple)';
+      taskHTML += `<div class="task-pill" style="background: ${color}20; color: ${color}; border-left: 2px solid ${color}">${t.judul}</div>`;
+    });
+    if (dayTasks.length > 3) taskHTML += `<div class="text-[9px] text-[var(--text-faint)]">+${dayTasks.length - 3} more</div>`;
+    html += `<div class="calendar-day ${isToday ? 'today' : ''}"><div class="day-num">${d}</div>${taskHTML}</div>`;
+  }
+  $('#calendarGrid').innerHTML = html;
+}
+
+function changeMonth(delta) { calCurrentMonth.setMonth(calCurrentMonth.getMonth() + delta); renderCalendar(); }
+function goToToday() { calCurrentMonth = new Date(); renderCalendar(); }
+
+// DOCS MODULE
+let currentDocFilter = 'all';
+let docSearchTerm = '';
+ $$('.tab-btn[data-docfilter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('.tab-btn[data-docfilter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentDocFilter = btn.dataset.docfilter;
+    renderDocs();
+  });
+});
+ $('#docSearch')?.addEventListener('input', (e) => { docSearchTerm = e.target.value.toLowerCase(); renderDocs(); });
+
+function renderDocs() {
+  let docs = DB.get('docs');
+  if (currentDocFilter !== 'all') docs = docs.filter(d => d.tipe === currentDocFilter);
+  if (docSearchTerm) docs = docs.filter(d => (d.judul + d.task_id + d.notes + d.sop_checklist).toLowerCase().includes(docSearchTerm));
+  
+  const typeIcons = { 'bast': 'fa-file-signature', 'hld_lld': 'fa-sitemap', 'asesmen': 'fa-clipboard-question', 'uat': 'fa-vial-circle-check', 'instalasi': 'fa-screwdriver-wrench', 'mop': 'fa-list-check', 'preventive': 'fa-shield-halved', 'corrective': 'fa-wrench', 'relokasi': 'fa-truck-ramp-box' };
+  const typeColors = { 'bast': '#4cc2ff', 'hld_lld': '#b67aff', 'asesmen': '#ffb800', 'uat': '#00d9a3', 'instalasi': '#ff7a1a', 'mop': '#ff7a1a', 'preventive': '#4cc2ff', 'corrective': '#ff3b5c', 'relokasi': '#b67aff' };
+  const typeLabels = { 'bast': 'BAST', 'hld_lld': 'HLD/LLD', 'asesmen': 'Asesmen', 'uat': 'UAT', 'instalasi': 'Instalasi', 'mop': 'MOP', 'preventive': 'Preventive', 'corrective': 'Corrective', 'relokasi': 'Relokasi' };
+  
+  $('#docsGrid').innerHTML = docs.map(d => `
+    <div class="doc-card" onclick="${d.tipe === 'mop' ? `generateMopPDF('${d.doc_id}')` : `viewDoc('${d.doc_id}')`}">
+      <div class="flex items-start justify-between mb-3">
+        <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: ${typeColors[d.tipe]}15"><i class="fa-solid ${typeIcons[d.tipe]}" style="color: ${typeColors[d.tipe]}"></i></div>
+        <span class="spec-badge" style="color: ${typeColors[d.tipe]}; border-color: ${typeColors[d.tipe]}40">${typeLabels[d.tipe]}</span>
+      </div>
+      <div class="font-semibold text-sm mb-1">${d.judul}</div>
+      <div class="text-xs text-[var(--text-faint)] mono mb-2">${d.doc_id} · ${d.task_id || 'no task'}</div>
+      <div class="text-xs text-[var(--text-dim)] line-clamp-2 mb-2">${(d.notes || '').slice(0, 100)}</div>
+      <div class="flex items-center justify-between pt-2 border-t border-[var(--border)]">
+        <div class="text-[10px] text-[var(--text-faint)] mono"><i class="fa-regular fa-calendar"></i> ${d.tanggal}</div>
+        <div class="flex gap-1">
+          ${d.tipe === 'mop' ? `<button class="btn btn-ghost px-2 py-1 text-xs" onclick="event.stopPropagation(); generateMopPDF('${d.doc_id}')"><i class="fa-solid fa-file-pdf"></i></button>` : `${d.file_url ? `<button class="btn btn-ghost px-2 py-1 text-xs" onclick="event.stopPropagation();"><i class="fa-solid fa-file-lines"></i></button>` : ''}`}
+          <button class="btn btn-ghost px-2 py-1 text-xs" onclick="event.stopPropagation(); downloadDoc('${d.doc_id}')"><i class="fa-solid fa-download"></i></button>
+          <button class="btn btn-danger px-2 py-1 text-xs" onclick="event.stopPropagation(); deleteDoc('${d.doc_id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  
+  if (docs.length === 0) {
+    $('#docsGrid').innerHTML = '<div class="col-span-full p-12 text-center text-[var(--text-faint)]"><i class="fa-solid fa-folder-open text-3xl mb-3"></i><div>Tidak ada dokumen ditemukan</div></div>';
+  }
+}
+
+function viewDoc(id) {
+  const d = DB.get('docs').find(x => x.doc_id === id);
+  if (!d) return;
+  showToast(`Membuka: ${d.judul}`, 'info', 'fa-folder-open');
+  logActivity('VIEW', `Membuka dokumen: ${d.judul} (${id})`);
+}
+
+function downloadDoc(id) {
+  const d = DB.get('docs').find(x => x.doc_id === id);
+  if (!d) return;
+  const blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${d.doc_id}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  logActivity('DOWNLOAD', `Mengunduh JSON dokumen: ${d.judul} (${id})`);
+  showToast(`Downloaded ${d.doc_id}`, 'success');
+}
+
+function deleteDoc(id) {
+  const d = DB.get('docs').find(x => x.doc_id === id);
+  if (d && confirm(`Hapus dokumen: ${d.judul}?`)) {
+    DB.delete('docs', id);
+    logActivity('DELETE', `Menghapus dokumen: ${d.judul} (${id})`);
+    showToast('Dokumen dihapus', 'success');
+    renderDocs(); renderDashboard();
+  }
+}
+
+function handleFileUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  $('#uploadText').textContent = file.name;
+  $('#fileList').innerHTML = `<div class="flex items-center gap-2 p-2 rounded-md bg-[var(--bg)] border border-[var(--border)] text-xs"><i class="fa-solid fa-file-lines text-[var(--info)]"></i><span class="flex-1 truncate">${file.name}</span><span class="text-[var(--text-faint)] mono">${(file.size / 1024).toFixed(1)} KB</span></div>`;
+  $('#fileUrlField').value = 'local://' + file.name;
+  logActivity('UPLOAD', `Menyiapkan upload file lokal: ${file.name}`);
+  showToast('File disimpan secara lokal', 'info', 'fa-database');
+}
+
+function saveDoc() {
+  const form = $('#docForm');
+  const obj = Object.fromEntries(new FormData(form));
+  if (!obj.judul) { showToast('Judul wajib diisi', 'error'); return; }
+  if (obj.tipe === 'mop' && (!obj.mop_controller || !obj.mop_engineer || !obj.mop_reviewer || !obj.mop_approver)) { 
+    showToast('Lengkapi data MOP (Controller, Engineer, Manager, Customer)', 'error'); 
+    return; 
+  }
+  
+  obj.doc_id = genId('DOC');
+  obj.tanggal = new Date().toISOString().slice(0, 16);
+  DB.insert('docs', obj);
+  logActivity('CREATE', `Menyimpan dokumentasi baru: ${obj.judul} (${obj.doc_id})`);
+  closeModal('docModal');
+  showToast(`Dokumen ${obj.doc_id} dibuat`, 'success');
+  renderDocs(); renderDashboard();
+}
+
+// GENERATE MOP DOCUMENT TO PDF
+function generateMopPDF(id) {
+  const d = DB.get('docs').find(x => x.doc_id === id);
+  if (!d) return;
+  const eng = getEngineer(d.mop_engineer);
+  
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  // Header
+  doc.setFillColor(255, 122, 26);
+  doc.rect(0, 0, 210, 30, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setFont(undefined, 'bold');
+  doc.text('Method of Procedure (MOP)', 14, 15);
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.text('PT. Mitra Integrasi Informatika - HSS2', 14, 22);
+  
+  // Metadata
+  doc.setTextColor(50, 50, 50);
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.text('Document Details', 14, 45);
+  
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.text(`Title: ${d.judul}`, 14, 55);
+  doc.text(`Document ID: ${d.doc_id}`, 14, 62);
+  doc.text(`Date: ${d.tanggal}`, 14, 69);
+  doc.text(`Task ID: ${d.task_id || '-'}`, 14, 76);
+  
+  // Approval Matrix
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.text('Approval Matrix', 14, 90);
+  
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.text(`Prepared by (Engineer): ${eng ? eng.nama : '-'}`, 14, 100);
+  doc.text(`Document Controller: ${d.mop_controller}`, 14, 107);
+  doc.text(`Reviewed by (Manager): ${d.mop_reviewer}`, 14, 114);
+  doc.text(`Approved by (Customer): ${d.mop_approver}`, 14, 121);
+  
+  // Table of Contents / SOP
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.text('Daftar Isi & SOP Checklist', 14, 135);
+  
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  const splitText = doc.splitTextToSize(d.sop_checklist || '-', 180);
+  doc.text(splitText, 14, 145);
+  
+  // Notes
+  let y = 145 + (splitText.length * 5) + 10;
+  if (y > 270) { doc.addPage(); y = 20; }
+  
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.text('Notes', 14, y);
+  
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  const splitNotes = doc.splitTextToSize(d.notes || '-', 180);
+  doc.text(splitNotes, 14, y + 10);
+  
+  // Signature Area
+  let sigY = y + 10 + (splitNotes.length * 5) + 20;
+  if (sigY > 250) { doc.addPage(); sigY = 20; }
+  
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'bold');
+  doc.text('Signatures:', 14, sigY);
+  
+  doc.setDrawColor(200);
+  doc.line(20, sigY + 20, 70, sigY + 20);
+  doc.line(80, sigY + 20, 130, sigY + 20);
+  doc.line(140, sigY + 20, 190, sigY + 20);
+  
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'normal');
+  doc.text('Engineer', 35, sigY + 25);
+  doc.text('Manager', 95, sigY + 25);
+  doc.text('Customer', 155, sigY + 25);
+  
+  doc.save(`MOP_${d.doc_id}.pdf`);
+  logActivity('GENERATE', `Mengunduh PDF MOP: ${d.judul} (${id})`);
+  showToast('MOP PDF berhasil diunduh', 'success', 'fa-file-pdf');
+}
+
+// LOGS MODULE
+function renderLogs() {
+  const logs = DB.get('logs').slice().reverse(); 
+  const colors = { 'CREATE': 'text-[var(--success)]', 'UPDATE': 'text-[var(--warning)]', 'DELETE': 'text-[var(--danger)]', 'UPLOAD': 'text-[var(--info)]', 'DOWNLOAD': 'text-[var(--info)]', 'GENERATE': 'text-[var(--accent)]' };
+  $('#logsTableBody').innerHTML = logs.map(l => `
+    <tr>
+      <td class="mono text-xs text-[var(--text-dim)]">${formatDateTime(l.timestamp)}</td>
+      <td><span class="spec-badge ${colors[l.action] || ''}">${l.action}</span></td>
+      <td>${l.description}</td>
+    </tr>
+  `).join('');
+  if (logs.length === 0) {
+    $('#logsTableBody').innerHTML = '<tr><td colspan="3" class="text-center text-[var(--text-faint)] py-8">Belum ada aktivitas tercatat.</td></tr>';
+  }
+}
+
+// INIT
+renderDashboard();
+ $$('.modal-overlay').forEach(o => { o.addEventListener('click', (e) => { if (e.target === o) o.classList.remove('active'); }); });
+</script>
+
+</body>
+</html>
